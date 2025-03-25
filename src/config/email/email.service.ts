@@ -3,34 +3,42 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-    private transporter;
+  private transporter;
 
-    constructor() {
-        // uso de gmail
-        this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER, // Usa variables de entorno
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail', 
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  }
+
+  async sendVerificationEmail(
+    email: string,
+    fullname: string,
+    code: string,
+  ): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: `"Tu Aplicación" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Código de verificación',
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Verificación de cuenta</h2>
+            <p>Hola ${fullname},</p>
+            <p>Tu código de verificación es:</p>
+            <h3 style="background: #f5f5f5; padding: 10px; display: inline-block;">
+              ${code}
+            </h3>
+            <p>Este código expirará en 15 minutos.</p>
+          </div>
+        `,
+      });
+    } catch (error) {
+      throw new Error(`Error al enviar correo: ${error.message}`);
     }
-
-    // envio de codigo de verificacion
-    async sendVerificationEmail(to: string, verificationCode: string): Promise<void> {
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to,
-            subject: 'Verificación de correo electrónico',
-            html: `<p>Tu código de verificación es: <strong>${verificationCode}</strong></p>`,
-        };
-
-        try {
-            await this.transporter.sendMail(mailOptions);
-            console.log(`Correo enviado a ${to}`);
-        } catch (error) {
-            console.error('Error al enviar el correo:', error);
-            throw new Error('Failed to send verification email');
-        }
-    }
+  }
 }

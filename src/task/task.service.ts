@@ -52,7 +52,6 @@ export class TaskService implements TaskServiceInterface {
     }
   }
 
-  // Método helper para mapear el documento a la interfaz Task
   private mapToTaskInterface(taskDoc: any): Task {
     return {
       id: taskDoc._id ? taskDoc._id.toString() : taskDoc.id,
